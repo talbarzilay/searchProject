@@ -1,13 +1,18 @@
-import heapq
-import time
-import random
-from collections import deque
-from sklearn.ensemble import RandomForestRegressor, AdaBoostRegressor, StackingRegressor, GradientBoostingRegressor
+
+from sklearn.ensemble import RandomForestRegressor, AdaBoostRegressor, StackingRegressor, GradientBoostingRegressor, BaggingRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.svm import SVR
 import pandas as pd
-from heuristics import RFHeuristic, AdaBoostHeuristic, StackingHeuristic
+from heuristics import RFHeuristic, AdaBoostHeuristic, BaggingHeuristic, StackingHeuristic, BaseHeuristic, BootstrappingHeuristic
+from preTrainedRegressor import PreTrainedRegressor
+
+
+isRF =False
+isADA=False
+isBAG=False
+isSTK=False
+
 
 
 print('starting....')
@@ -16,52 +21,77 @@ print('starting....')
 samples_df = pd.read_csv('sample.csv', header=None)
 labels_df = pd.read_csv('labels.csv', header=None)
 
-print('loaded sample....')
-
 train_features = samples_df.values.tolist()
 train_distances = labels_df.values.flatten().tolist()
 
-print('pre proccesed sample....')
 
-# Train Random Forest
-rf = RandomForestRegressor(n_estimators=100)
-rf.fit(train_features, train_distances)
 
-print('trained rf...')
+if isRF:
+    print('training rf...')
+    rf = RandomForestRegressor(n_estimators=100)
+    rf.fit(train_features, train_distances)
 
-# Train AdaBoost
-ada = AdaBoostRegressor(n_estimators=100)
-ada.fit(train_features, train_distances)
 
-print('trained ada...')
 
-# Train Stacking Ensemble with additional heuristics
-estimators = [
-    ('rf', RandomForestRegressor(n_estimators=30)),
-    ('ada', AdaBoostRegressor(n_estimators=30)),
-    ('gbr', GradientBoostingRegressor(n_estimators=30)),
-    ('dtr', DecisionTreeRegressor()),
-    ('svr', SVR())
-]
-stacking = StackingRegressor(estimators=estimators, final_estimator=LinearRegression())
-stacking.fit(train_features, train_distances)
+if isADA:
+    print('training xgb...')
+    xgb = GradientBoostingRegressor(n_estimators=100)
+    xgb.fit(train_features, train_distances)
 
-print('trained stacking...')
+
+
+if isBAG:
+    print('training bagging...')
+    bag = BaggingRegressor(n_estimators=100, max_samples=0.7)
+    bag.fit(train_features, train_distances)
 
 
 
 
-# models
+if isSTK:
+    print('trained stacking...')
 
-rf_heuristic = RFHeuristic(rf)
-stacking_heuristic = StackingHeuristic(stacking)
-ada_heuristic = AdaBoostHeuristic(ada)
+    basic = BaseHeuristic()
+    boot = BootstrappingHeuristic()
+    boot.load_model()
 
-#save models
+    # Train Stacking Ensemble with additional heuristics
+    estimators = [
+        ('rf', RandomForestRegressor(n_estimators=30)),
+        ('ada', AdaBoostRegressor(n_estimators=30)),
+        ('xgb', GradientBoostingRegressor(n_estimators=30)),
+        ('gbr', GradientBoostingRegressor(n_estimators=30)),
+        ('bag', BaggingRegressor(n_estimators=30, max_samples=0.7)),
+        ('dtr', DecisionTreeRegressor()),
+        ('svr', SVR()),
+        ('bsc', PreTrainedRegressor(basic)),
+        ('bsp', PreTrainedRegressor(boot)),
+    ]
+    stacking = StackingRegressor(estimators=estimators, final_estimator=LinearRegression())
+    stacking.fit(train_features, train_distances)
 
-rf_heuristic.save_model()
-stacking_heuristic.save_model()
-ada_heuristic.save_model()
+
+
+
+
+
+print('saving models...')
+
+if isRF:
+    rf_heuristic = RFHeuristic(rf)
+    rf_heuristic.save_model()
+
+if isADA:
+    ada_heuristic = AdaBoostHeuristic(xgb)
+    ada_heuristic.save_model()
+
+if isBAG:
+    bagging_heuristic = BaggingHeuristic(bag)
+    bagging_heuristic.save_model()
+
+if isSTK:
+    stacking_heuristic = StackingHeuristic(stacking)
+    stacking_heuristic.save_model()
 
 print('done.')
 

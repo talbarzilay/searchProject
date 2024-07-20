@@ -7,13 +7,15 @@ from topspin import TopSpinState
 
 
 n,k = 11,4
-N=5000
+N=20000
 
 
 def generate():
     #boot_heuristic = BootstrappingHeuristic(n, k)
     #_bootstrappingTraining(boot_heuristic, n, k, 4, 5, 1000) if isTrain else boot_heuristic.load_model()
     #boot_heuristic.load_model()
+
+    # using administrative huristic to make sure results are accurte!
     base_heuristic = BaseHeuristic(n,k)
 
     print(datetime.now())

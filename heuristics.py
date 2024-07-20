@@ -26,6 +26,25 @@ class BaseHeuristic:
 
         return gaps
 
+        return self.get_h_values(X)
+
+    def predict(self, X):
+        gaps = []
+
+        for state_as_list in X:
+            gap = 0
+            if state_as_list[0] != 1:
+                gap = 1
+
+            for i in range(len(state_as_list) - 1):
+                if abs(state_as_list[i] - state_as_list[i + 1]) != 1:
+                    gap += 1
+
+            gaps.append(gap)
+
+        res = np.array(gaps)
+        return res
+
 class HeuristicModel(nn.Module):
     def __init__(self, input_dim):
         super(HeuristicModel, self).__init__()
@@ -45,7 +64,7 @@ class HeuristicModel(nn.Module):
         x = self.fc4(x)
         return x
 
-class LearnedHeuristic:
+class LearnedHeuristic(BaseHeuristic):
     def __init__(self, n=11, k=4):
         self._n = n
         self._k = k
@@ -56,6 +75,13 @@ class LearnedHeuristic:
     def get_h_values(self, states):
         states_as_list = [state.get_state_as_list() for state in states]
         states = np.array(states_as_list, dtype=np.float32)
+        states_tensor = torch.tensor(states)
+        with torch.no_grad():
+            predictions = self._model(states_tensor).numpy()
+        return predictions.flatten()
+    
+    def predict(self, X):
+        states = np.array(X, dtype=np.float32)
         states_tensor = torch.tensor(states)
         with torch.no_grad():
             predictions = self._model(states_tensor).numpy()
@@ -85,6 +111,7 @@ class LearnedHeuristic:
         self._model.load_state_dict(torch.load(path))
         self._model.eval()
 
+
 class BellmanUpdateHeuristic(LearnedHeuristic):
     def __init__(self, n=11, k=4):
         super().__init__(n, k)
@@ -110,16 +137,19 @@ class BootstrappingHeuristic(LearnedHeuristic):
 # --------------------- sklearn ---------------------
 
 #sklearn model save using pickle
-class SKHeuristic:
+class SKHeuristic(LearnedHeuristic):
     def __init__(self, model):
         self._model = model
 
     def get_h_values(self, states):
         states_as_list = [state.get_state_as_list() for state in states]
         return self._model.predict(states_as_list)
+    
+    def predict(self, X):
+        return self._model.predict(X)
 
     def save_model(self, filename):
-        with open(filename, 'b') as picklefile:
+        with open(filename, 'wb') as picklefile:
             pickle.dump(self._model, picklefile)        
 
     def load_model(self, filename):
@@ -156,4 +186,14 @@ class StackingHeuristic(SKHeuristic):
 
     def load_model(self):
         super().load_model('stacking_heuristic.pkl')
+
+class BaggingHeuristic(SKHeuristic):
+    def __init__(self, model):
+        self._model = model
+
+    def save_model(self):
+        super().save_model('bagging_heuristic.pkl')
+
+    def load_model(self):
+        super().load_model('bagging_heuristic.pkl')
 
