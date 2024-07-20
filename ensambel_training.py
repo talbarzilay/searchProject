@@ -7,51 +7,10 @@ from sklearn.linear_model import LinearRegression
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.svm import SVR
 import pandas as pd
+from heuristics import RFHeuristic, AdaBoostHeuristic, StackingHeuristic
 
 
 print('starting....')
-
-class RFHeuristic:
-    def __init__(self, model):
-        self.model = model
-
-    def get_h_values(self, states):
-        states_as_list = [state.get_state_as_list() for state in states]
-        return self.model.predict(states_as_list)
-
-    def save_model(self):
-        super().save_model('rf_heuristic.pth')
-
-    def load_model(self):
-        super().load_model('rf_heuristic.pth')
-
-class AdaBoostHeuristic:
-    def __init__(self, model):
-        self.model = model
-
-    def get_h_values(self, states):
-        states_as_list = [state.get_state_as_list() for state in states]
-        return self.model.predict(states_as_list)
-
-    def save_model(self):
-        super().save_model('ada_heuristic.pth')
-
-    def load_model(self):
-        super().load_model('ada_heuristic.pth')
-
-class StackingHeuristic:
-    def __init__(self, model):
-        self.model = model
-
-    def get_h_values(self, states):
-        states_as_list = [state.get_state_as_list() for state in states]
-        return self.model.predict(states_as_list)
-
-    def save_model(self):
-        super().save_model('stacking_heuristic.pth')
-
-    def load_model(self):
-        super().load_model('stacking_heuristic.pth')
 
 # Read data from CSV files
 samples_df = pd.read_csv('sample.csv', header=None)

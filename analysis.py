@@ -1,8 +1,6 @@
 import random
 from datetime import datetime, timedelta
-from heuristics import BaseHeuristic
-from heuristics import BellmanUpdateHeuristic
-from ensambel_models import RFHeuristic, AdaBoostHeuristic, StackingHeuristic
+from heuristics import BaseHeuristic, BellmanUpdateHeuristic, RFHeuristic, AdaBoostHeuristic, StackingHeuristic
 from BWAS import BWAS
 from topspin import TopSpinState
 
@@ -10,7 +8,7 @@ from topspin import TopSpinState
 
 def full_analysis():
     n,k=11,4
-    data = [getRandomState(n,k) for _ in range(1000)]
+    data = [getRandomState(n,k) for _ in range(100)]
 
     base_heuristic = BaseHeuristic(n, k)
     rf_huristic = RFHeuristic(None)
@@ -25,7 +23,7 @@ def full_analysis():
 
     for W, B in [ (5,10)]:
         for heuristic, heuristic_name in [(rf_huristic.get_h_values, 'rf'), (ada_huristic.get_h_values, 'ada'), (stacking_huristic.get_h_values, 'stk')]:
-            analysis(W, B, heuristic, heuristic_name, data, T=15000)
+            analysis(W, B, heuristic, heuristic_name, data, T=10000)
 
 
 
@@ -35,7 +33,7 @@ def analysis(W, B, heuristic, heuristic_name, data, T=1000000):
     succesfull_runs_count = len([path for path in paths if path is not None])
     paths, times, expentions = get_succesfull_runs_metrics(paths, times, expentions)
 
-    print(W, '\t', B, '\t',  heuristic_name, '\t\t', succesfull_runs_count, '\t', (sum(times, timedelta(0))/succesfull_runs_count).total_seconds(), '\t', sum(len(path) for path in paths)/succesfull_runs_count, '\t', sum(expentions)/succesfull_runs_count)
+    print(W, '\t', B, '\t',  heuristic_name, '\t\t', succesfull_runs_count, '\t', (sum(times, timedelta(0))/succesfull_runs_count).total_seconds() if succesfull_runs_count > 0 else 'n/a', '\t', sum(len(path) for path in paths)/succesfull_runs_count if succesfull_runs_count > 0 else 'n/a', '\t', sum(expentions)/succesfull_runs_count if succesfull_runs_count > 0 else 'n/a')
 
 
 
@@ -47,7 +45,7 @@ def get_metrics(W, B, heuristic, data, T=1000000):
     paths = []
     expentions = []
 
-    for state in data:
+    for index, state in enumerate(data):
         start = datetime.now()
         path, expention_count = BWAS(state, W, B, heuristic, T)
         end = datetime.now()

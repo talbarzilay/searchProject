@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import pickle
 import numpy as np
 
 class BaseHeuristic:
@@ -103,3 +104,56 @@ class BootstrappingHeuristic(LearnedHeuristic):
 
     def load_model(self):
         super().load_model('bootstrapping_heuristic.pth')
+
+
+
+# --------------------- sklearn ---------------------
+
+#sklearn model save using pickle
+class SKHeuristic:
+    def __init__(self, model):
+        self._model = model
+
+    def get_h_values(self, states):
+        states_as_list = [state.get_state_as_list() for state in states]
+        return self._model.predict(states_as_list)
+
+    def save_model(self, filename):
+        with open(filename, 'b') as picklefile:
+            pickle.dump(self._model, picklefile)        
+
+    def load_model(self, filename):
+        with open(filename, 'rb') as picklefile:
+            self._model = pickle.load(picklefile)
+
+
+class RFHeuristic(SKHeuristic):
+    def __init__(self, model):
+        self._model = model
+
+    def save_model(self):
+        super().save_model('rf_heuristic.pkl')
+
+    def load_model(self):
+        super().load_model('rf_heuristic.pkl')
+
+class AdaBoostHeuristic(SKHeuristic):
+    def __init__(self, model):
+        self._model = model
+
+    def save_model(self):
+        super().save_model('ada_heuristic.pkl')
+
+    def load_model(self):
+        super().load_model('ada_heuristic.pkl')
+
+class StackingHeuristic(SKHeuristic):
+    def __init__(self, model):
+        self._model = model
+
+    def save_model(self):
+        super().save_model('stacking_heuristic.pkl')
+
+    def load_model(self):
+        super().load_model('stacking_heuristic.pkl')
+
