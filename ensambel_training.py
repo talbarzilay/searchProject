@@ -71,7 +71,6 @@ if isSTK:
         ('rf', RandomForestRegressor(n_estimators=30)),
         ('ada', AdaBoostRegressor(n_estimators=30)),
         ('xgb', GradientBoostingRegressor(n_estimators=30)),
-        ('gbr', GradientBoostingRegressor(n_estimators=30)),
         ('bag', BaggingRegressor(n_estimators=30, max_samples=0.7)),
         ('dtr', DecisionTreeRegressor()),
         ('svr', SVR()),
