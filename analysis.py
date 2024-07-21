@@ -6,13 +6,13 @@ from topspin import TopSpinState
 
 SAMPLE_SIZE=1000
 
-isRF =False
+isRF =True
 isXGB=True
 isADA=True
-isBAG=False
-isSTK=False
-isBasic=False
-isBoot=False
+isBAG=True
+isSTK=True
+isBasic=True
+isBoot=True
 
 
 
