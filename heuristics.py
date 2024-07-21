@@ -177,6 +177,16 @@ class AdaBoostHeuristic(SKHeuristic):
     def load_model(self):
         super().load_model('ada_heuristic.pkl')
 
+class XgbBoostHeuristic(SKHeuristic):
+    def __init__(self, model):
+        self._model = model
+
+    def save_model(self):
+        super().save_model('xgb_heuristic.pkl')
+
+    def load_model(self):
+        super().load_model('xgb_heuristic.pkl')
+
 class StackingHeuristic(SKHeuristic):
     def __init__(self, model):
         self._model = model

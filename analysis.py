@@ -1,10 +1,18 @@
 import random
 from datetime import datetime, timedelta
-from heuristics import BaseHeuristic, BellmanUpdateHeuristic, RFHeuristic, AdaBoostHeuristic, BaggingHeuristic, StackingHeuristic
+from heuristics import BaseHeuristic, BootstrappingHeuristic, RFHeuristic, AdaBoostHeuristic, XgbBoostHeuristic, BaggingHeuristic, StackingHeuristic
 from BWAS import BWAS
 from topspin import TopSpinState
 
 SAMPLE_SIZE=1000
+
+isRF =False
+isXGB=True
+isADA=True
+isBAG=False
+isSTK=False
+isBasic=False
+isBoot=False
 
 
 
@@ -12,21 +20,41 @@ def full_analysis():
     n,k=11,4
     data = [getRandomState(n,k) for _ in range(SAMPLE_SIZE)]
 
-    #base_heuristic = BaseHeuristic(n, k)
+    base_heuristic = BaseHeuristic(n, k)
+    boot_heuristic = BootstrappingHeuristic()
+
+
     rf_huristic = RFHeuristic(None)
     ada_huristic = AdaBoostHeuristic(None)
+    xgb_huristic = XgbBoostHeuristic(None)
     bag_huristic = BaggingHeuristic(None)
     stacking_huristic = StackingHeuristic(None)
 
     rf_huristic.load_model()
     ada_huristic.load_model()
+    xgb_huristic.load_model()
     bag_huristic.load_model()
     stacking_huristic.load_model()
+    boot_heuristic.load_model()
+
+
+    hueristics = [
+        (rf_huristic.get_h_values, 'rf', isRF),
+        (ada_huristic.get_h_values, 'ada', isADA), 
+        (xgb_huristic.get_h_values, 'xgb', isXGB), 
+        (bag_huristic.get_h_values, 'bag', isBAG), 
+        (stacking_huristic.get_h_values, 'stk', isSTK),
+        (base_heuristic.get_h_values, 'bsc', isBasic), 
+        (boot_heuristic.get_h_values, 'bot', isBoot), 
+    ]
+    hueristics = [(h, name) for (h, name, shoudUse) in hueristics if shoudUse]
+
 
     print('W', '\t', 'B', '\t', 'heuristic', '\t', '#succs', 'avg. time', '\t', 'avg. len', '\t', 'avg. exps', '\n')
 
-    for W, B in [ (5,10)]:
-        for heuristic, heuristic_name in [(rf_huristic.get_h_values, 'rf'), (ada_huristic.get_h_values, 'ada'), (bag_huristic.get_h_values, 'bag'), (stacking_huristic.get_h_values, 'stk')]:
+
+    for W, B in [(5,10)]:
+        for heuristic, heuristic_name in hueristics:
             analysis(W, B, heuristic, heuristic_name, data, T=10000)
 
 

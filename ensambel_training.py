@@ -4,22 +4,25 @@ from sklearn.linear_model import LinearRegression
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.svm import SVR
 import pandas as pd
-from heuristics import RFHeuristic, AdaBoostHeuristic, BaggingHeuristic, StackingHeuristic, BaseHeuristic, BootstrappingHeuristic
+from heuristics import RFHeuristic, AdaBoostHeuristic, XgbBoostHeuristic, BaggingHeuristic, StackingHeuristic, BaseHeuristic, BootstrappingHeuristic
 from preTrainedRegressor import PreTrainedRegressor
 
 
 isRF =False
-isADA=False
+isXGB=True
+isADA=True
 isBAG=False
 isSTK=False
+
+isLargeSample=False
 
 
 
 print('starting....')
 
 # Read data from CSV files
-samples_df = pd.read_csv('sample.csv', header=None)
-labels_df = pd.read_csv('labels.csv', header=None)
+samples_df = pd.read_csv(f'sample{"132" if isLargeSample else "38"}.csv', header=None)
+labels_df = pd.read_csv(f'labels{"132" if isLargeSample else "38"}.csv', header=None)
 
 train_features = samples_df.values.tolist()
 train_distances = labels_df.values.flatten().tolist()
@@ -33,10 +36,18 @@ if isRF:
 
 
 
-if isADA:
+if isXGB:
     print('training xgb...')
     xgb = GradientBoostingRegressor(n_estimators=100)
     xgb.fit(train_features, train_distances)
+
+
+
+if isADA:
+    print('training ada...')
+    ada = AdaBoostRegressor(n_estimators=100)
+    ada.fit(train_features, train_distances)
+
 
 
 
@@ -81,8 +92,12 @@ if isRF:
     rf_heuristic = RFHeuristic(rf)
     rf_heuristic.save_model()
 
+if isXGB:
+    xgb_heuristic = XgbBoostHeuristic(xgb)
+    xgb_heuristic.save_model()
+
 if isADA:
-    ada_heuristic = AdaBoostHeuristic(xgb)
+    ada_heuristic = AdaBoostHeuristic(ada)
     ada_heuristic.save_model()
 
 if isBAG:
@@ -92,6 +107,7 @@ if isBAG:
 if isSTK:
     stacking_heuristic = StackingHeuristic(stacking)
     stacking_heuristic.save_model()
+
 
 print('done.')
 
